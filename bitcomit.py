@@ -160,6 +160,8 @@ class bitcomit(QObject):
                             self.signal_debug.emit(self.__class__.__name__, "going to remove: %s" % f)
                             self.remove(f)
                         except:
+                            e = sys.exc_info()[0]
+                            self.signal_debug.emit(self.__class__.__name__, "Error: %s" % e)
                             pass
                         if self.restart:
                             self.startTask(tRow)
@@ -167,6 +169,9 @@ class bitcomit(QObject):
         except:
             self.traceback()
             self.signal_errored.emit()
+        finally:
+            targetList = None
+            rows = None
 
     def getTaskListRows(self):
         '''get task_list rows : /panel/task_list'''
