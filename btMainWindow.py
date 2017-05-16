@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow,
                              QPlainTextEdit, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel,
                              QLineEdit, QCheckBox)
+from PyQt5.QtGui import (QIcon)
 import logging
 
 from bitcomit import bitcomit, btThread
@@ -71,7 +72,7 @@ class MainWindow(QMainWindow):
         self.initUI()
         
         self.setFixedSize(600, 400)
-        
+        self.setWindowIcon(QIcon('btReload.png'))
         
         XStream.stdout().messageWritten.connect( self.logTextEdit.insertPlainText )
         XStream.stderr().messageWritten.connect( self.logTextEdit.insertPlainText )
