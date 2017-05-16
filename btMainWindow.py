@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
     '''
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.settings = QSettings()
+        self.settings = QSettings('btReload.ini', QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)    # File only, no fallback to registry or or.
  
         self.initUI()
