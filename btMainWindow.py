@@ -6,7 +6,7 @@ Created on Mon May 15 08:37:06 2017
 @author: jimmy
 """
 '''require PyQt5  '''
-
+import platform
 import sys
 import datetime
 from PyQt5.QtCore import (Qt, QObject, pyqtSignal, pyqtSlot, QSettings)
@@ -269,9 +269,15 @@ if __name__ == '__main__':
     app.setOrganizationName("coolshou")
     app.setOrganizationDomain("coolshou.idv.tw");
     app.setApplicationName("btReload")
+    #AppUserModelID
+    if platform.system() == "Windows":
+        import ctypes
+        myappid = u'btReload.coolshou.idv.tw' # arbitrary string
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     MAINWIN = MainWindow()
     MAINWIN.setWindowTitle("Bitcomit reload Tesk")
     MAINWIN.show()
 
 
     sys.exit(app.exec_())
+    
