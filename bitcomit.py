@@ -46,30 +46,8 @@ class bitcomit(QObject):
         self.stop = False
         self.restart = restart
         
-        self.base_url = sUrl
-        self.port= sPort
-        self.username= sUser
-        self.password= sPassword
-        self.signal_debug.emit(self.__class__.__name__, 
-                               "init:%s, %s, %s, %s" %(self.base_url, self.port, 
-                                      self.username, self.password))
-        # create a password manager
-        password_mgr = request.HTTPPasswordMgrWithDefaultRealm()
-        
-        # Add the username and password.
-        # If we knew the realm, we could use it instead of None.
-        self.top_level_url = self.base_url + ":" +self.port #"http://192.168.10.108:24374"
-        password_mgr.add_password(None, self.top_level_url, self.username, self.password)
-        
-        handler = request.HTTPBasicAuthHandler(password_mgr)
-        
-        # create "opener" (OpenerDirector instance)
-        self.opener = request.build_opener(handler)
-    
-        # Install the opener.
-        # Now all calls to urllib.request.urlopen use our opener.
-        request.install_opener(self.opener)
-
+        self.initAuth( sUrl, sPort, sUser, sPassword)
+            
     def __del__(self):
         ''' destructure?     '''
         self.exiting = True
@@ -129,6 +107,30 @@ class bitcomit(QObject):
         self.restart = bRestart
         locker.unlock()
 
+    def initAuth(self, sUrl, sPort, sUser, sPassword):
+        self.base_url = sUrl
+        self.port= sPort
+        self.username= sUser
+        self.password= sPassword
+        self.signal_debug.emit(self.__class__.__name__, 
+                               "init:%s, %s, %s, %s" %(self.base_url, self.port, 
+                                      self.username, self.password))
+        # create a password manager
+        password_mgr = request.HTTPPasswordMgrWithDefaultRealm()
+        
+        # Add the username and password.
+        # If we knew the realm, we could use it instead of None.
+        self.top_level_url = self.base_url + ":" +self.port #"http://192.168.10.108:24374"
+        password_mgr.add_password(None, self.top_level_url, self.username, self.password)
+        
+        handler = request.HTTPBasicAuthHandler(password_mgr)
+        
+        # create "opener" (OpenerDirector instance)
+        self.opener = request.build_opener(handler)
+    
+        # Install the opener.
+        # Now all calls to urllib.request.urlopen use our opener.
+        request.install_opener(self.opener)
         
     def doTaskControl(self):
         # use the opener to fetch a URL
@@ -176,14 +178,19 @@ class bitcomit(QObject):
     def getTaskListRows(self):
         '''get task_list rows : /panel/task_list'''
         a_url=self.top_level_url+"/panel/task_list"
-        response = self.opener.open(a_url)
-        html = response.read()
-        #print(html.decode("utf-8"))
-        page = etree.HTML(html.decode("utf-8") )
-        #print(page.text)
-        tables = page.xpath(u"//table[3]")
-        rows = tables[0].findall("tr")
-        return rows
+        self.signal_debug.emit(self.__class__.__name__, a_url)
+        try:
+            response = self.opener.open(a_url)
+            html = response.read()
+            #print(html.decode("utf-8"))
+            page = etree.HTML(html.decode("utf-8") )
+            #print(page.text)
+            tables = page.xpath(u"//table[3]")
+            rows = tables[0].findall("tr")
+            return rows
+        except:
+            self.traceback()
+            return []
         
     def getProgress(self, row):
         progress = row.getchildren()[5].text
@@ -230,7 +237,8 @@ class bitcomit(QObject):
         exc_type, exc_obj, tb = sys.exc_info()
         # This function returns the current line number set in the traceback object.  
         lineno = tb.tb_lineno  
-        self.signal_debug.emit(self.__class__.__name__, "%s - %s" % (exc_type, lineno))
+        self.signal_debug.emit(self.__class__.__name__, 
+                               "%s - %s - Line: %s" % (exc_type, exc_obj, lineno))
         
 if __name__ == "__main__":
     bt = bitcomit("http://192.168.10.108", "24374", "admin", "123456")
