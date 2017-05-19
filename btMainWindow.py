@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow,
                              QHBoxLayout, QPushButton, QLabel,
                              QLineEdit, QCheckBox)
 from PyQt5.QtGui import (QIcon)
+from PyQt5.uic import loadUi
 import logging
 
 from bitcomit import bitcomit, btThread
@@ -69,8 +70,16 @@ class MainWindow(QMainWindow):
         self.settings = QSettings('btReload.ini', QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)    # File only, no fallback to registry or or.
  
-        self.initUI()
         
+        loadUi('btMainWindow.ui',self)
+        self.loadSetting()
+        self.cbRestart.stateChanged.connect(self.setRestart)
+        self.btnStart.clicked.connect(self.startMoni)
+        self.btnStop.clicked.connect(self.stopMoni)
+        self.setBtnMoni(0)
+        '''
+        self.initUI()
+        '''
         self.setFixedSize(600, 400)
         self.setWindowIcon(QIcon('btReload.png'))
         
@@ -90,7 +99,14 @@ class MainWindow(QMainWindow):
         self.saveSetting()
         event.accept()
 
-        
+    def loadSetting(self):
+        self.leUrl.setText(self.settings.value('url', "http://127.0.0.1"))
+        self.lePort.setText(self.settings.value('port', "12345"))
+        self.leUser.setText(self.settings.value('username', "admin"))
+        self.lePass.setText(self.settings.value('password', "123456"))
+        self.sbWait.setValue(int(self.settings.value('Waittime', "60")))
+        self.cbRestart.setCheckState(int(self.settings.value('Restart', 2)))
+
     def initUI(self):
         #UI
         self.tabLog = QWidget(self)
@@ -191,7 +207,7 @@ class MainWindow(QMainWindow):
                 #self.log("startMoni","create worker connection")
                 self.worker = bitcomit(self.leUrl.text(), self.lePort.text(), 
                                    self.leUser.text(), self.lePass.text(),
-                                   int(self.leWait.text()))  # no parent!
+                                   int(self.sbWait.text()))  # no parent!
                 self.worker.signal_debug.connect(self.log)
                 self.worker.signal_countdown.connect(self.updateCountDown)
                 self.worker.signal_errored.connect(self.errorHandle)
@@ -259,7 +275,7 @@ class MainWindow(QMainWindow):
         self.settings.setValue('username', self.leUser.text())
         self.settings.setValue('password', self.lePass.text())
         self.settings.setValue('Restart', self.cbRestart.checkState())
-        self.settings.setValue('Waittime', self.leWait.text())
+        self.settings.setValue('Waittime', self.sbWait.text())
         
 
 # main
