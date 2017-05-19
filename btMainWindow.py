@@ -77,9 +77,7 @@ class MainWindow(QMainWindow):
         self.btnStart.clicked.connect(self.startMoni)
         self.btnStop.clicked.connect(self.stopMoni)
         self.setBtnMoni(0)
-        '''
-        self.initUI()
-        '''
+        
         self.setFixedSize(600, 400)
         self.setWindowIcon(QIcon('btReload.png'))
         
@@ -106,89 +104,7 @@ class MainWindow(QMainWindow):
         self.lePass.setText(self.settings.value('password', "123456"))
         self.sbWait.setValue(int(self.settings.value('Waittime', "60")))
         self.cbRestart.setCheckState(int(self.settings.value('Restart', 2)))
-
-    def initUI(self):
-        #UI
-        self.tabLog = QWidget(self)
-        self.topBar = QWidget(self.tabLog)
-        self.logTextEdit = QPlainTextEdit(self.tabLog)
-        self.buttonBar = QWidget(self.tabLog)
-        layout = QVBoxLayout()
-        layout.addWidget(self.topBar)
-        layout.addWidget(self.logTextEdit)
-        layout.addWidget(self.buttonBar)
-        #topBar
-        #   url
-        self.urlBar = QWidget(self.topBar)
-        self.lbUrlText = QLabel(self.urlBar)
-        self.lbUrlText.setText("Bitcomit URL:")
-        self.leUrl = QLineEdit(self.urlBar)
-        self.leUrl.setText(self.settings.value('url', "http://127.0.0.1"))
-        self.lbPortText = QLabel(self.urlBar)
-        self.lbPortText.setText("Port:")
-        self.lePort = QLineEdit(self.urlBar)
-        self.lePort.setText(self.settings.value('port', "12345"))
-        hlayout  = QHBoxLayout()
-        hlayout.addWidget(self.lbUrlText)
-        hlayout.addWidget(self.leUrl)
-        hlayout.addWidget(self.lbPortText)
-        hlayout.addWidget(self.lePort)
-        self.urlBar.setLayout(hlayout)
-        #   admin
-        self.adminBar = QWidget(self.topBar)
-        self.lbUserText = QLabel(self.adminBar)
-        self.lbUserText.setText("Username:")
-        self.leUser = QLineEdit(self.adminBar)
-        self.leUser.setText(self.settings.value('username', "admin"))
-        self.lbPassText = QLabel(self.adminBar)
-        self.lbPassText.setText("password:")
-        self.lePass = QLineEdit(self.adminBar)
-        self.lePass.setText(self.settings.value('password', "123456"))
-        self.cbRestart = QCheckBox(self.adminBar)
-        self.cbRestart.setText("Start Task after delete file")
-        self.cbRestart.setCheckState(int(self.settings.value('Restart', 2)))
-        self.cbRestart.stateChanged.connect(self.setRestart)
-        hlayout  = QHBoxLayout()
-        hlayout.addWidget(self.lbUserText)
-        hlayout.addWidget(self.leUser)
-        hlayout.addWidget(self.lbPassText)
-        hlayout.addWidget(self.lePass)
-        hlayout.addWidget(self.cbRestart)
-        self.adminBar.setLayout(hlayout)
-
-        vlayout  = QVBoxLayout()
-        vlayout.addWidget(self.urlBar)
-        vlayout.addWidget(self.adminBar)
-        self.topBar.setLayout(vlayout)
-        
-        #buttonBar
-        self.lbWaitText = QLabel(self.buttonBar)
-        self.lbWaitText.setText("Wait (s) to check")
-        self.leWait = QLineEdit(self.buttonBar)
-        self.leWait.setText(self.settings.value('Waittime', "60"))
-        
-        self.lbCountDownText = QLabel(self.buttonBar)
-        self.lbCountDownText.setText("Next checking in:")
-        self.lbCountDown = QLabel(self.buttonBar)
-        self.btnStart = QPushButton(self.buttonBar)
-        self.btnStart.setText("start")
-        self.btnStart.clicked.connect(self.startMoni)
-        self.btnStop = QPushButton(self.buttonBar)
-        self.btnStop.setText("stop")
-        self.btnStop.clicked.connect(self.stopMoni)
-        self.setBtnMoni(0)
-        hlayout  = QHBoxLayout()
-        hlayout.addWidget(self.lbWaitText)
-        hlayout.addWidget(self.leWait)
-        hlayout.addWidget(self.lbCountDownText)
-        hlayout.addWidget(self.lbCountDown)
-        hlayout.addWidget(self.btnStart)
-        hlayout.addWidget(self.btnStop)
-        self.buttonBar.setLayout(hlayout)
-        self.tabLog.setLayout(layout)
-        
-        self.setCentralWidget(self.tabLog)
-        
+      
     def setBtnMoni(self, startstop):
         ''' 1: '''
         if startstop:
