@@ -9,11 +9,12 @@ Created on Mon May 15 08:37:06 2017
 import platform
 import sys
 import datetime
-from PyQt5.QtCore import (Qt, QObject, pyqtSignal, pyqtSlot, QSettings)
-from PyQt5.QtWidgets import (QApplication, QMainWindow,
+from PyQt5.QtCore import (Qt, QObject, pyqtSignal, pyqtSlot, QSettings,
+                          QEvent)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, qApp,
                              QPlainTextEdit, QWidget, QVBoxLayout,
-                             QHBoxLayout, QPushButton, QLabel,
-                             QLineEdit, QCheckBox)
+                             QHBoxLayout, QPushButton, QLabel, QMenu,
+                             QLineEdit, QCheckBox, QSystemTrayIcon)
 from PyQt5.QtGui import (QIcon)
 from PyQt5.uic import loadUi
 import logging
@@ -60,6 +61,25 @@ class XStream(QObject):
             sys.stderr = XStream._stderr
         return XStream._stderr
         
+class SystemTrayIcon(QSystemTrayIcon):
+
+    def __init__(self, icon, parent=None):
+        QSystemTrayIcon.__init__(self, icon, parent)
+        #menu = QMenu(parent)
+        self.show_action = QAction("Show", self)
+        #self.show_action.triggered.connect(qApp.show)
+        self.hide_action = QAction("Hide", self)
+        #self.hide_action.triggered.connect(self.hide)
+        self.quit_action = QAction("Exit", self)
+        self.quit_action.triggered.connect(qApp.quit)
+
+        tray_menu = QMenu()
+        tray_menu.addAction(self.show_action)
+        tray_menu.addAction(self.hide_action)        
+        tray_menu.addSeparator()
+        tray_menu.addAction(self.quit_action)
+
+        self.setContextMenu(tray_menu)
         
 class MainWindow(QMainWindow):
     '''
@@ -70,14 +90,19 @@ class MainWindow(QMainWindow):
         self.settings = QSettings('btReload.ini', QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)    # File only, no fallback to registry or or.
  
+        if platform.system() == "Windows":
+            self.RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+            self.regSettings = QSettings(self.RUN_PATH, QSettings.NativeFormat)
         
         loadUi('btMainWindow.ui',self)
         self.loadSetting()
         self.cbRestart.stateChanged.connect(self.setRestart)
         self.btnStart.clicked.connect(self.startMoni)
         self.btnStop.clicked.connect(self.stopMoni)
+        self.cbLaunchOnSystemStart.stateChanged.connect(self.setBootStart)
+        self.cbMinimizeToTray.stateChanged.connect(self.setSystemTray)
         self.setBtnMoni(0)
-        
+
         self.setFixedSize(600, 400)
         self.setWindowIcon(QIcon('btReload.png'))
         
@@ -86,17 +111,46 @@ class MainWindow(QMainWindow):
         
         self.worker = None
         self.worker_thread = None
-                       
+        
+        # Init QSystemTrayIcon
+        self.trayIcon = SystemTrayIcon(QIcon('btReload.png'), self)
+        self.trayIcon.show_action.triggered.connect(self.show)
+        self.trayIcon.hide_action.triggered.connect(self.hide)
+        if (self.cbMinimizeToTray.isChecked()):
+            self.trayIcon.show()
+        #    self.hide()
+        
+        
+        
     def __del__(self):
         ''' destructure     '''    
         
 
     def closeEvent(self, event):
-        print('Calling')
-        print('event: {0}'.format(event))
+        #print('Calling')
+        #print('event: {0}'.format(event))
         self.saveSetting()
-        event.accept()
-
+        if self.cbMinimizeToTray.isChecked():
+            event.ignore()
+            self.hide()
+            #self.trayIcon.showMessage(
+            #    "btReload",
+            #    "Application was minimized to system Tray",
+            #    QSystemTrayIcon.Information,
+            #    4000
+            #)
+        else:
+            print("close")
+            event.accept()
+    
+    def changeEvent(self, e):
+        if(e.type() == QEvent.WindowStateChange and self.isMinimized()):
+            self.hide()
+            e.accept()
+            return
+        else:
+            super(MainWindow, self).changeEvent(e)
+    
     def loadSetting(self):
         self.leUrl.setText(self.settings.value('url', "http://127.0.0.1"))
         self.lePort.setText(self.settings.value('port', "12345"))
@@ -104,7 +158,9 @@ class MainWindow(QMainWindow):
         self.lePass.setText(self.settings.value('password', "123456"))
         self.sbWait.setValue(int(self.settings.value('Waittime', "60")))
         self.cbRestart.setCheckState(int(self.settings.value('Restart', 2)))
-      
+        self.cbLaunchOnSystemStart.setCheckState(int(self.settings.value('LaunchOnSystemStart', 2)))
+        self.cbMinimizeToTray.setCheckState(int(self.settings.value('MinimizeToTray', 2)))
+
     def setBtnMoni(self, startstop):
         ''' 1: '''
         if startstop:
@@ -158,7 +214,22 @@ class MainWindow(QMainWindow):
             self.worker.setRestart(True)
         else:
             self.worker.setRestart(False)
-        
+            
+    @pyqtSlot(int)
+    def setBootStart(self, state):
+        if platform.system() == "Windows":
+            if ( state == Qt.Checked):
+                self.regSettings.setValue("btReload",sys.argv[0]);
+            else:
+                self.regSettings.remove("btReload");
+                
+    @pyqtSlot(int)                
+    def setSystemTray(self, state):
+        if ( state == Qt.Checked):
+            self.trayIcon.show()
+        else:
+            self.trayIcon.hide()
+
     def finished(self):
         self.setBtnMoni(0)
         # if you want the thread to stop after the worker is done
@@ -180,10 +251,8 @@ class MainWindow(QMainWindow):
                                            sFrom, sMsg))
         
     def updateCountDown(self, count):
-        #TODO: CountDown label
-        #self.log("main", str(count))
-        self.lbCountDown.setText(str(count))
-
+        self.statusbar.showMessage("Next check in %s sec" % str(count))
+        
     def saveSetting(self):
         ''' save setting to setting file'''
         self.settings.setValue('url', self.leUrl.text())
@@ -192,7 +261,10 @@ class MainWindow(QMainWindow):
         self.settings.setValue('password', self.lePass.text())
         self.settings.setValue('Restart', self.cbRestart.checkState())
         self.settings.setValue('Waittime', self.sbWait.text())
-        
+        self.settings.setValue('LaunchOnSystemStart', self.cbLaunchOnSystemStart.checkState())
+        self.setBootStart(self.cbLaunchOnSystemStart.checkState())
+        self.settings.setValue('MinimizeToTray', self.cbMinimizeToTray.checkState())
+
 
 # main
 if __name__ == '__main__':
