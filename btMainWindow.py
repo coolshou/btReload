@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
     
         # Init QSystemTrayIcon
         self.trayIcon = SystemTrayIcon(QIcon('btReload.png'), self)
-        self.trayIcon.show_action.triggered.connect(self.show)
+        self.trayIcon.show_action.triggered.connect(self.showUI)
         self.trayIcon.hide_action.triggered.connect(self.hide)
         if (self.cbMinimizeToTray.isChecked()):
             self.trayIcon.show()
@@ -156,6 +156,11 @@ class MainWindow(QMainWindow):
         else:
             super(MainWindow, self).changeEvent(e)
     
+    def showUI(self):
+        self.show()
+        if self.isMinimized():
+            self.setWindowState(Qt.WindowNoState)
+            
     def loadSetting(self):
         self.leUrl.setText(self.settings.value('url', "http://127.0.0.1"))
         self.lePort.setText(self.settings.value('port', "12345"))
