@@ -10,7 +10,7 @@ import platform
 import sys
 import datetime
 from PyQt5.QtCore import (Qt, QObject, pyqtSignal, pyqtSlot, QSettings,
-                          QEvent)
+                          QEvent, QTimer)
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, qApp,
                              QPlainTextEdit, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QMenu,
@@ -112,6 +112,11 @@ class MainWindow(QMainWindow):
         self.worker = None
         self.worker_thread = None
         
+        self.timer = QTimer()
+        #self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.timerTimeout)
+        self.timerCount = 0
+    
         # Init QSystemTrayIcon
         self.trayIcon = SystemTrayIcon(QIcon('btReload.png'), self)
         self.trayIcon.show_action.triggered.connect(self.show)
@@ -127,8 +132,6 @@ class MainWindow(QMainWindow):
         
 
     def closeEvent(self, event):
-        #print('Calling')
-        #print('event: {0}'.format(event))
         self.saveSetting()
         if self.cbMinimizeToTray.isChecked():
             event.ignore()
@@ -140,7 +143,9 @@ class MainWindow(QMainWindow):
             #    4000
             #)
         else:
-            print("close")
+            if self.timer.isActive():
+                self.timer.stop()
+            
             event.accept()
     
     def changeEvent(self, e):
@@ -160,6 +165,14 @@ class MainWindow(QMainWindow):
         self.cbRestart.setCheckState(int(self.settings.value('Restart', 2)))
         self.cbLaunchOnSystemStart.setCheckState(int(self.settings.value('LaunchOnSystemStart', 2)))
         self.cbMinimizeToTray.setCheckState(int(self.settings.value('MinimizeToTray', 2)))
+        if (int(self.settings.value('RecheckBitcomit', 1)) == 1):
+            
+            RecheckBitcomit = True
+        else:
+            RecheckBitcomit = False
+        self.RecheckBitcomit.setChecked(RecheckBitcomit)
+        self.sb_recheckWait.setValue(int(self.settings.value('RecheckWait', 60)))
+        
 
     def setBtnMoni(self, startstop):
         ''' 1: '''
@@ -223,13 +236,23 @@ class MainWindow(QMainWindow):
             else:
                 self.regSettings.remove("btReload");
                 
-    @pyqtSlot(int)                
+    @pyqtSlot(int)
     def setSystemTray(self, state):
         if ( state == Qt.Checked):
             self.trayIcon.show()
         else:
             self.trayIcon.hide()
-
+            
+    @pyqtSlot()
+    def timerTimeout(self):
+        #self.log("timerTimeout", "timerTimeout: try startMoni()")
+        timeLeave = self.sb_recheckWait.value() - self.timerCount
+        self.updateTimerCountDown(timeLeave)
+        if ( timeLeave <= 0):
+            self.timerCount = 0
+            self.startMoni()
+        self.timerCount = self.timerCount + 1
+        
     def finished(self):
         self.setBtnMoni(0)
         # if you want the thread to stop after the worker is done
@@ -244,12 +267,17 @@ class MainWindow(QMainWindow):
         self.worker_thread.wait(30000)
         self.worker_thread = None
         self.worker = None
+        if self.RecheckBitcomit.isChecked():
+            self.timer.start(1000)
             
     def log(self, sFrom, sMsg):
         self.logTextEdit.appendPlainText("[%s] %s : %s " 
                                          %(datetime.datetime.today().strftime("%Y-%m-%d %H:%M:%S"), 
                                            sFrom, sMsg))
         
+    def updateTimerCountDown(self, count):
+        self.statusbar.showMessage("Check bitcomit in %s sec" % str(count))
+
     def updateCountDown(self, count):
         self.statusbar.showMessage("Next check in %s sec" % str(count))
         
@@ -264,6 +292,12 @@ class MainWindow(QMainWindow):
         self.settings.setValue('LaunchOnSystemStart', self.cbLaunchOnSystemStart.checkState())
         self.setBootStart(self.cbLaunchOnSystemStart.checkState())
         self.settings.setValue('MinimizeToTray', self.cbMinimizeToTray.checkState())
+        if self.RecheckBitcomit.isChecked():
+            RecheckBitcomit = 1
+        else:
+            RecheckBitcomit = 0
+        self.settings.setValue('RecheckBitcomit', RecheckBitcomit)
+        self.settings.setValue('RecheckWait', self.sb_recheckWait.value())
 
 
 # main

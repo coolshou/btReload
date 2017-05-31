@@ -190,6 +190,7 @@ class bitcomit(QObject):
             return rows
         except:
             self.traceback()
+            self.signal_errored.emit()
             return []
         
     def getProgress(self, row):
