@@ -227,12 +227,17 @@ class bitcomit(QObject):
 
     def remove(self, path):
         """ param <path> could either be relative or absolute. """
-        if os.path.isfile(path):
-            os.remove(path)  # remove the file
-        elif os.path.isdir(path):
-            shutil.rmtree(path)  # remove dir and all contains
-        else:
-            raise ValueError("file {} is not a file or dir.".format(path))
+        try:
+            if os.path.isfile(path):
+                os.remove(path)  # remove the file
+            elif os.path.isdir(path):
+                shutil.rmtree(path)  # remove dir and all contains
+            else:
+                self.signal_debug.emit(self.__class__.__name__, "file or path \"%s\" not found" % path)
+        except:
+            #raise ValueError("file {} is not a file or dir.".format(path))
+            self.traceback()
+            self.signal_errored.emit()
 
     def traceback(self, err=None):
         exc_type, exc_obj, tb = sys.exc_info()
