@@ -184,6 +184,8 @@ class MainWindow(QMainWindow):
             self.btnStop.setEnabled(False)
         
     def startMoni(self):
+        if self.timer.isActive():
+            self.timer.stop()
         if self.worker_thread is None:
             self.worker_thread = btThread()
             
