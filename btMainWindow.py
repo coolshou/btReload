@@ -226,7 +226,8 @@ class MainWindow(QMainWindow):
         if self.timer.isActive():
             self.timer.stop()
         self.setBtnMoni(0)
-        self.worker.do_stop()
+        if not self.worker is None:
+            self.worker.do_stop()
     
     @pyqtSlot(int)
     def setRestart(self, state):
@@ -272,8 +273,9 @@ class MainWindow(QMainWindow):
     def errorHandle(self):
         self.log("errorHandle", "bitcomit error")
         self.stopMoni()
-        self.worker_thread.terminate()
-        self.worker_thread.wait(30000)
+        if not self.worker_thread is None:
+            self.worker_thread.terminate()
+            self.worker_thread.wait(30000)
         self.worker_thread = None
         self.worker = None
         if self.RecheckBitcomit.isChecked():
