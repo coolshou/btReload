@@ -218,6 +218,8 @@ class MainWindow(QMainWindow):
             
         
     def stopMoni(self):
+        if self.timer.isActive():
+            self.timer.stop()
         self.setBtnMoni(0)
         self.worker.do_stop()
     
