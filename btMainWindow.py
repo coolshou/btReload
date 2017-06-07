@@ -6,6 +6,10 @@ Created on Mon May 15 08:37:06 2017
 @author: jimmy
 """
 '''require PyQt5  '''
+
+__version__ = "20170607"
+
+
 import platform
 import sys
 import datetime

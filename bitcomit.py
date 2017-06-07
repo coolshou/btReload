@@ -6,6 +6,9 @@ Created on Sun May 14 10:37:03 2017
 @author: coolshou
 """
 ''' require lxml '''
+
+__version__ = "20170607"
+
 try:
     # For Python 3.0 and later
     #from urllib.request import urlopen
