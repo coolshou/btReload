@@ -157,12 +157,11 @@ class bitcomit(QObject):
                     f = self.getSaveFilename(tRow)
                     #print(f)
                     self.stopTask(tRow)
-                    #make sure it is stoped
-                    #rows =self.getTaskListRows()
-                    state = self.getState(rows[tRow+1])
-                    
+                                      
                     waitstop=5
                     while waitstop>0:
+                        #get TaskList page again and make sure it is stoped
+                        rows =self.getTaskListRows()
                         state = self.getState(rows[tRow+1])
                         self.signal_debug.emit(self.__class__.__name__, ("[%s] %s state: %s" %(tRow, f, state)))
                         if "stopped" in state:
