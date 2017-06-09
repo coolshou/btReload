@@ -7,7 +7,7 @@ Created on Mon May 15 08:37:06 2017
 """
 '''require PyQt5  '''
 
-__version__ = "20170607"
+__version__ = "20170609"
 
 
 import platform
@@ -18,7 +18,8 @@ from PyQt5.QtCore import (Qt, QObject, pyqtSignal, pyqtSlot, QSettings,
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, qApp,
                              QPlainTextEdit, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QMenu,
-                             QLineEdit, QCheckBox, QSystemTrayIcon)
+                             QLineEdit, QCheckBox, QSystemTrayIcon,
+                             QMessageBox)
 from PyQt5.QtGui import (QIcon)
 from PyQt5.uic import loadUi
 import logging
@@ -86,9 +87,8 @@ class SystemTrayIcon(QSystemTrayIcon):
         self.setContextMenu(tray_menu)
         
 class MainWindow(QMainWindow):
-    '''
-    MainWindow class
-    '''
+    '''     MainWindow class     '''
+    
     def __init__(self):
         super(MainWindow, self).__init__()
         self.settings = QSettings('btReload.ini', QSettings.IniFormat)
@@ -105,6 +105,7 @@ class MainWindow(QMainWindow):
         self.btnStop.clicked.connect(self.stopMoni)
         self.cbLaunchOnSystemStart.stateChanged.connect(self.setBootStart)
         self.cbMinimizeToTray.stateChanged.connect(self.setSystemTray)
+        self.createMenuAction()
         self.setBtnMoni(0)
 
         self.setFixedSize(600, 400)
@@ -134,7 +135,23 @@ class MainWindow(QMainWindow):
     def __del__(self):
         ''' destructure     '''    
         
-
+    def createMenuAction(self):
+        
+        self.actAbout = QAction("About", self)
+        self.actAbout.triggered.connect(self.showAbout)
+        self.menuAbout.addAction(self.actAbout)
+        
+    @pyqtSlot()
+    def showAbout(self):
+        #print("showAbout")
+        sVer = "Version: %s\n" % __version__
+        #if self.worker:
+        sVer = sVer + " bitcomit.py version: %s" % bitcomit.__version__
+        
+        ret = QMessageBox.information(self, "About - %s" % self.windowTitle(), 
+                                      sVer , QMessageBox.Ok)
+        
+        
     def closeEvent(self, event):
         self.saveSetting()
         if self.cbMinimizeToTray.isChecked():

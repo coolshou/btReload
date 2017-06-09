@@ -7,8 +7,6 @@ Created on Sun May 14 10:37:03 2017
 """
 ''' require lxml '''
 
-__version__ = "20170607"
-
 try:
     # For Python 3.0 and later
     #from urllib.request import urlopen
@@ -32,7 +30,10 @@ class btThread(QThread):
         self.exec_()
         
 class bitcomit(QObject):
-
+    ''' python object to control bitcomit    '''
+    
+    __version__ = "20170609"
+    
     signal_debug = pyqtSignal(str, str)
     signal_finished = pyqtSignal()
     signal_errored = pyqtSignal()
@@ -157,8 +158,18 @@ class bitcomit(QObject):
                     #print(f)
                     self.stopTask(tRow)
                     #make sure it is stoped
-                    rows =self.getTaskListRows()
+                    #rows =self.getTaskListRows()
                     state = self.getState(rows[tRow+1])
+                    
+                    waitstop=5
+                    while waitstop>0:
+                        state = self.getState(rows[tRow+1])
+                        self.signal_debug.emit(self.__class__.__name__, ("[%s] %s state: %s" %(tRow, f, state)))
+                        if "stopped" in state:
+                            break
+                        waitstop = waitstop - 1
+                        time.sleep(2000) #wait 2 sec
+                    
                     if "stopped" in state:
                         #remove file
                         try:
