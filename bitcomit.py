@@ -167,7 +167,7 @@ class bitcomit(QObject):
                         if "stopped" in state:
                             break
                         waitstop = waitstop - 1
-                        time.sleep(2000) #wait 2 sec
+                        time.sleep(2) #wait 2 sec
                     
                     if "stopped" in state:
                         #remove file
