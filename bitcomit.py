@@ -32,7 +32,7 @@ class btThread(QThread):
 class bitcomit(QObject):
     ''' python object to control bitcomit    '''
     
-    __version__ = "20170609"
+    __version__ = "20170614"
     
     signal_debug = pyqtSignal(str, str)
     signal_finished = pyqtSignal()
