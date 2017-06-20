@@ -93,12 +93,19 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.settings = QSettings('btReload.ini', QSettings.IniFormat)
         self.settings.setFallbacksEnabled(False)    # File only, no fallback to registry or or.
- 
+        
         if platform.system() == "Windows":
             self.RUN_PATH = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
             self.regSettings = QSettings(self.RUN_PATH, QSettings.NativeFormat)
-        
-        loadUi('btMainWindow.ui',self)
+        if getattr( sys, 'frozen', False ) :
+            # running in a bundle
+            bundle_dir = sys._MEIPASS
+            ui = '%s/btMainWindow.ui' % bundle_dir
+            mainicon = '%s/btReload.png' % bundle_dir
+        else:
+            ui = 'btMainWindow.ui'
+            mainicon = 'btReload.png'
+        loadUi(ui,self)
         self.loadSetting()
         self.cbRestart.stateChanged.connect(self.setRestart)
         self.btnStart.clicked.connect(self.startMoni)
@@ -109,7 +116,7 @@ class MainWindow(QMainWindow):
         self.setBtnMoni(0)
 
         self.setFixedSize(600, 400)
-        self.setWindowIcon(QIcon('btReload.png'))
+        self.setWindowIcon(QIcon(mainicon))
         
         XStream.stdout().messageWritten.connect( self.logTextEdit.insertPlainText )
         XStream.stderr().messageWritten.connect( self.logTextEdit.insertPlainText )
@@ -123,7 +130,7 @@ class MainWindow(QMainWindow):
         self.timerCount = 0
     
         # Init QSystemTrayIcon
-        self.trayIcon = SystemTrayIcon(QIcon('btReload.png'), self)
+        self.trayIcon = SystemTrayIcon(QIcon(mainicon), self)
         self.trayIcon.show_action.triggered.connect(self.showUI)
         self.trayIcon.hide_action.triggered.connect(self.hide)
         if (self.cbMinimizeToTray.isChecked()):
