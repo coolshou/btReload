@@ -32,7 +32,7 @@ class btThread(QThread):
 class bitcomit(QObject):
     ''' python object to control bitcomit    '''
     
-    __version__ = "20170614"
+    __version__ = "20170623"
     
     signal_debug = pyqtSignal(str, str)
     signal_finished = pyqtSignal()
@@ -175,9 +175,11 @@ class bitcomit(QObject):
                             self.signal_debug.emit(self.__class__.__name__, "going to remove: %s" % f)
                             self.remove(f)
                         except:
-                            e = sys.exc_info()[0]
-                            self.signal_debug.emit(self.__class__.__name__, "Error: %s" % e)
-                            pass
+                            #e = sys.exc_info()[0]
+                            #self.signal_debug.emit(self.__class__.__name__, "Error: %s" % e)
+                            self.traceback()
+                            self.signal_errored.emit()
+                        time.sleep(1) #wait 1 sec
                         if self.restart:
                             self.startTask(tRow)
                 
