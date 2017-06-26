@@ -171,7 +171,7 @@ class MainWindow(QMainWindow):
         else:
             if self.timer.isActive():
                 self.timer.stop()
-            
+            self.trayIcon.hide()
             event.accept()
     
     def changeEvent(self, e):
