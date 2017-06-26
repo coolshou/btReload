@@ -350,14 +350,18 @@ class MainWindow(QMainWindow):
         user = self.leUser.text()
         pw = self.lePass.text()
         url = self.leUrl.text()
+        '''IE6 (KB832894) and above not support Basic authentication with URL
+         eg: http(s)://user:passwaord@url:port
+        '''
         if (url.find("http://") == -1):
+          url = "http://%s" % url
+        '''
             url = "http://%s:%s@%s" % (user, pw, url)
         else:
             url = url[:7] + user + ':' + pw + '@' + url[7:]
-            
+        '''    
         port =  self.lePort.text()
-        #http://user:password@www.stagesite.com:port
-        print("launch browser with url: %s" % url)
+        print("launch browser with url: %s:%s" % (url, port))
         webbrowser.open("%s:%s" % (url,port) , new=2)
         
 # main
