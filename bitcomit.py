@@ -32,7 +32,7 @@ class btThread(QThread):
 class bitcomit(QObject):
     ''' python object to control bitcomit    '''
     
-    __version__ = "20170623"
+    __version__ = "20170626"
     
     signal_debug = pyqtSignal(str, str)
     signal_finished = pyqtSignal()
@@ -244,10 +244,10 @@ class bitcomit(QObject):
     def remove(self, path):
         """ param <path> could either be relative or absolute. """
         try:
-            if os.path.isfile(path):
+            if (os.path.isfile(path) or os.path.islink(path)):
                 os.remove(path)  # remove the file
             elif os.path.isdir(path):
-                shutil.rmtree(path)  # remove dir and all contains
+                shutil.rmtree(path, ignore_errors=True)  # remove dir and all contains
             else:
                 self.signal_debug.emit(self.__class__.__name__, "file or path \"%s\" not found" % path)
         except:
