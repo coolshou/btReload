@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, qApp,
 from PyQt5.QtGui import (QIcon)
 from PyQt5.uic import loadUi
 import logging
+import webbrowser
 
 from bitcomit import bitcomit, btThread
 
@@ -109,6 +110,7 @@ class MainWindow(QMainWindow):
         self.btnStop.clicked.connect(self.stopMoni)
         self.cbLaunchOnSystemStart.stateChanged.connect(self.setBootStart)
         self.cbMinimizeToTray.stateChanged.connect(self.setSystemTray)
+        self.btnBrowser.clicked.connect(self.openBrowser)
         self.createMenuAction()
         self.setBtnMoni(0)
 
@@ -343,7 +345,21 @@ class MainWindow(QMainWindow):
         self.settings.setValue('RecheckBitcomit', RecheckBitcomit)
         self.settings.setValue('RecheckWait', self.sb_recheckWait.value())
 
-
+    def openBrowser(self):
+        ''' open system's browser '''
+        user = self.leUser.text()
+        pw = self.lePass.text()
+        url = self.leUrl.text()
+        if (url.find("http://") == -1):
+            url = "http://%s:%s@%s" % (user, pw, url)
+        else:
+            url = url[:7] + user + ':' + pw + '@' + url[7:]
+            
+        port =  self.lePort.text()
+        #http://user:password@www.stagesite.com:port
+        print("launch browser with url: %s" % url)
+        webbrowser.open("%s:%s" % (url,port) , new=2)
+        
 # main
 if __name__ == '__main__':
     app = QApplication(sys.argv)
