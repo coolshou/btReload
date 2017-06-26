@@ -7,7 +7,7 @@ Created on Mon May 15 08:37:06 2017
 """
 '''require PyQt5  '''
 
-__version__ = "20170609"
+__version__ = "20170626"
 
 
 import platform
@@ -16,10 +16,7 @@ import datetime
 from PyQt5.QtCore import (Qt, QObject, pyqtSignal, pyqtSlot, QSettings,
                           QEvent, QTimer)
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QAction, qApp,
-                             QPlainTextEdit, QWidget, QVBoxLayout,
-                             QHBoxLayout, QPushButton, QLabel, QMenu,
-                             QLineEdit, QCheckBox, QSystemTrayIcon,
-                             QMessageBox)
+                             QMenu, QSystemTrayIcon, QMessageBox)
 from PyQt5.QtGui import (QIcon)
 from PyQt5.uic import loadUi
 import logging
@@ -133,6 +130,7 @@ class MainWindow(QMainWindow):
         self.trayIcon = SystemTrayIcon(QIcon(mainicon), self)
         self.trayIcon.show_action.triggered.connect(self.showUI)
         self.trayIcon.hide_action.triggered.connect(self.hide)
+        self.trayIcon.activated.connect(self.systemTrayHandle)
         if (self.cbMinimizeToTray.isChecked()):
             self.trayIcon.show()
         #    self.hide()
@@ -155,8 +153,8 @@ class MainWindow(QMainWindow):
         #if self.worker:
         sVer = sVer + " bitcomit.py version: %s" % bitcomit.__version__
         
-        ret = QMessageBox.information(self, "About - %s" % self.windowTitle(), 
-                                      sVer , QMessageBox.Ok)
+        QMessageBox.information(self, "About - %s" % self.windowTitle(), 
+                                sVer , QMessageBox.Ok)
         
         
     def closeEvent(self, event):
@@ -183,12 +181,20 @@ class MainWindow(QMainWindow):
             return
         else:
             super(MainWindow, self).changeEvent(e)
-    
+            
+    @pyqtSlot()    
     def showUI(self):
         self.show()
         if self.isMinimized():
             self.setWindowState(Qt.WindowNoState)
-            
+
+    def systemTrayHandle(self, reason):
+        #if reason == QSystemTrayIcon.Trigger:
+        #    print('Clicked')
+        if reason == QSystemTrayIcon.DoubleClick:
+            self.showUI()
+            #print('DoubleClick')
+        
     def loadSetting(self):
         self.leUrl.setText(self.settings.value('url', "http://127.0.0.1"))
         self.lePort.setText(self.settings.value('port', "12345"))
@@ -199,7 +205,6 @@ class MainWindow(QMainWindow):
         self.cbLaunchOnSystemStart.setCheckState(int(self.settings.value('LaunchOnSystemStart', 2)))
         self.cbMinimizeToTray.setCheckState(int(self.settings.value('MinimizeToTray', 2)))
         if (int(self.settings.value('RecheckBitcomit', 1)) == 1):
-            
             RecheckBitcomit = True
         else:
             RecheckBitcomit = False
