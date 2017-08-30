@@ -377,7 +377,7 @@ if __name__ == '__main__':
         myappid = u'btReload.coolshou.idv.tw' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     MAINWIN = MainWindow()
-    MAINWIN.setWindowTitle("Bitcomit reload Tesk")
+    MAINWIN.setWindowTitle("Bitcomit reload Task")
     MAINWIN.show()
 
 
