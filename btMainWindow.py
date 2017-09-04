@@ -7,7 +7,7 @@ Created on Mon May 15 08:37:06 2017
 """
 '''require PyQt5  '''
 
-__version__ = "20170626"
+__version__ = "20170904"
 
 
 import platform
