@@ -29,3 +29,5 @@
 
 # NOTE:
   Window 7/8/8.1 require to install kb2999226 to fix the "The procress entry point ucrtbase.terminate could not be locate in the dynamic link library api-ms-win-crt-runtime-l1-1-0.dll" problem when package into an exe file. 
+
+https://support.microsoft.com/en-us/help/2999226/update-for-universal-c-runtime-in-windows
