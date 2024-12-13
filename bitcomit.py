@@ -57,7 +57,7 @@ class bitcomit(QObject):
         self.exiting = True
         self.stop = False
 
-    @pyqtSlot()
+    # @pyqtSlot()
     def task(self):
         '''
         # Note: This is never called directly. It is called by Qt once the
@@ -90,7 +90,7 @@ class bitcomit(QObject):
             
         self.signal_debug.emit(self.__class__.__name__, "task end!!")
 
-    @pyqtSlot()
+    # @pyqtSlot()
     def do_stop(self):
         ''' stop the sender thread  '''
         locker.lock()
@@ -98,14 +98,14 @@ class bitcomit(QObject):
         self.stop = True
         locker.unlock()
 
-    @pyqtSlot()        
+    # @pyqtSlot()        
     def do_resume(self):
         ''' resume the sender thread  '''
         locker.lock()
         self.stop = False
         locker.unlock()
 
-    @pyqtSlot(bool)        
+    # @pyqtSlot(bool)        
     def setRestart(self, bRestart):
         locker.lock()
         self.restart = bRestart
